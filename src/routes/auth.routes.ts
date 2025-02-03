@@ -13,7 +13,7 @@ authRouter.post("/", async (req: Request, res: Response) => {
         turma: "clamed V3"
     }
 
-    const chaveSecretaJwt = "1321fsafghfahgsf1321"
+    const chaveSecretaJwt = process.env.JWT_SECRET ?? ""
 
     const token = await jwt.sign(payload, chaveSecretaJwt, {expiresIn: '1h'})
 

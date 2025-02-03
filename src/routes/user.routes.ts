@@ -23,7 +23,7 @@ userRouter.post("/", async (req: Request, res: Response) => {
         let senha = req.body.password
 
         // const salt = await bcrypt.genSalt(10)
-        const salt = "jhsgafhsafgsaghf"
+        const salt = Number(process.env.SALT_BCRYPT) ?? 10;
 
         let senhaCriptografada = await bcrypt.hash(senha, salt);
 
@@ -39,6 +39,7 @@ userRouter.post("/", async (req: Request, res: Response) => {
         res.status(201).json(user)
 
     } catch (ex) {
+        console.log(ex)
         res.status(500).send("Ocorreu um erro ao executar a solicitação")
     }
 })
