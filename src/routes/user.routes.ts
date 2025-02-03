@@ -92,32 +92,4 @@ userRouter.delete("/:id", async (req: Request, res: Response) => {
     }
 })
 
-userRouter.post("/login", async (req: Request, res: Response) => {
-    const usuarioLogin = req.body
-
-    const user = await userRepository.findOne({
-        where: {
-            email: usuarioLogin.email
-        }
-    })
-
-    if(!user){
-        res.status(400).json("Usuário não encontrado")
-        return
-    }
-
-    const salt = "jhsgafhsafgsaghf"
-
-    let isCorreto = await bcrypt.compare(usuarioLogin.password, user.password);
-
-    if(isCorreto){
-        // segue a vida
-        // aqui eu gero o token
-    } else {
-        res.status(400).json("Usuário e/ou senha inválida(o)")
-        return
-    }
-
-})
-
 export default userRouter;
