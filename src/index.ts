@@ -9,6 +9,9 @@ import authRouter from "./routes/auth.routes";
 import userRouter from "./routes/user.routes";
 import authenticate from "./middlewares/authenticate";
 
+import { Role } from "./entity/Role";
+import { Permission } from "./entity/Permission";
+
 const app = express()
 
 app.use(cors())
