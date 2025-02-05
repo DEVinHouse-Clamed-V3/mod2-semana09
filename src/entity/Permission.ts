@@ -12,7 +12,7 @@ export class Permission {
     @Column({default: new Date()})
     createdAt: Date;
 
-    @Column()
+    @Column({nullable: true})
     updatedAt: Date;
 
     @ManyToMany(() => Role, (role) => role.permissions)

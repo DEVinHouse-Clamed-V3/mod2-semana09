@@ -8,9 +8,7 @@ import cors from "cors"
 import authRouter from "./routes/auth.routes";
 import userRouter from "./routes/user.routes";
 import authenticate from "./middlewares/authenticate";
-
-import { Role } from "./entity/Role";
-import { Permission } from "./entity/Permission";
+import rbacRouter from "./routes/rbac.routes";
 
 const app = express()
 
@@ -19,6 +17,7 @@ app.use(express.json())
 
 app.use("/login", authRouter)
 app.use("/users", authenticate, userRouter)
+app.use("/rbac", rbacRouter)
 
 AppDataSource.initialize().then(() => {
     app.listen(3000, () => {

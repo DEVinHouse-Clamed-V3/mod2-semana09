@@ -14,7 +14,7 @@ export class Role {
     @Column({default: new Date()})
     createdAt: Date;
 
-    @Column()
+    @Column({nullable: true})
     updatedAt: Date;
 
     @ManyToMany(() => User, (user) => user.roles)
