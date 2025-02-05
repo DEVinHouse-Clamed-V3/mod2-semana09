@@ -65,4 +65,53 @@ rbacRouter.post("/createOneRole", async (req: Request, res: Response) => {
     }
 })
 
+rbacRouter.get("/listPermissionsByRole", async (req: Request, res: Response) => {
+    try {
+        const roles = await roleRepository.find({
+            relations: ["permissions"]
+        })
+
+        res.status(200).json(roles)
+    } catch (ex){
+        res.status(500).json("Erro ao processar solicitação")
+    }
+})
+
+rbacRouter.post("/addPermissionToRole", async (req: Request, res: Response) => {
+    try {
+        const permissionRoleBody = req.body as {
+            permissionId: number;
+            roleId: number;
+        }
+
+        const permission = await permissionRepository
+            .findOneBy({id: permissionRoleBody.permissionId})
+
+        if(!permission){
+            res.status(400).json("Permissão não existe!")
+            return
+        }
+
+        const role = await roleRepository.findOne({ 
+            where: {
+                id: permissionRoleBody.roleId
+            },
+            relations: ["permissions"]
+        })
+
+        if(!role){
+            res.status(400).json("Função não existe!")
+            return
+        }
+        
+        role.permissions.push(permission)
+        await roleRepository.save(role)
+
+        res.status(200).json(role)
+
+    } catch (ex){
+        console.log(ex)
+        res.status(500).json("Erro ao processar solicitação")
+    }
+})
 export default rbacRouter
