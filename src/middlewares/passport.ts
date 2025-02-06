@@ -1,31 +1,27 @@
-import passport from 'passport';
-import { Strategy as LocalStrategy } from 'passport-local';
-import bcrypt from 'bcrypt';
+import passport from "passport";
+import { Strategy as GoogleStrategy } from "passport-google-oauth20";
+import dotenv from "dotenv";
 
-import { AppDataSource } from '../data-source';
-import { User } from '../entity/User';
+dotenv.config();
 
-const usersRepository = AppDataSource.getRepository(User);
+passport.use(new GoogleStrategy(
+    {
+        clientID: process.env.GOOGLE_CLIENT_ID as string,
+        clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+        callbackURL: "/auth/google/callback"
+    },
+    (accessToken, refreshToken, profile, done) => {
+        return done(null, profile);
+    }
+));
 
-passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
-    const user = await usersRepository.findOneBy({ email: email });
-
-    if (!user) return done(null, false, { message: 'Usuário não encontrado' });
-
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-        if (err) return done(err);
-        if (!isMatch) return done(null, false, { message: 'Senha incorreta' });
-        return done(null, user);
-    });
-}));
-
+// Serialização e desserialização do usuário
 passport.serializeUser((user: any, done) => {
-    done(null, user.id);
+    done(null, user);
 });
 
-passport.deserializeUser(async (id: any, done) => {
-    const user = await usersRepository.findOne({where: {id: id}});
-    done(null, user);
+passport.deserializeUser((obj: any, done) => {
+    done(null, obj);
 });
 
 export default passport;

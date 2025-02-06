@@ -5,10 +5,6 @@ import "reflect-metadata";
 import express, { Request, Response } from "express"
 import {AppDataSource} from "./data-source"
 import cors from "cors"
-import authRouter from "./routes/auth.routes";
-import userRouter from "./routes/user.routes";
-import authenticate from "./middlewares/authenticate";
-import rbacRouter from "./routes/rbac.routes";
 
 import passport from "./middlewares/passport";
 
@@ -22,32 +18,45 @@ app.use(express.json())
 
 app.use(session({ secret: 'segredo', resave: false, saveUninitialized: false }));
 
+// Configuração da sessão
+app.use(session({
+    secret: "secreto",
+    resave: false,
+    saveUninitialized: false
+}));
+
 app.use(passport.initialize());
 app.use(passport.session());
 
-// app.use("/login", authRouter)
-// app.use("/users", authenticate, userRouter)
-// app.use("/rbac", rbacRouter)
+// Middleware para verificar autenticação
+const ensureAuthenticated = (req: any, res: any, next: any) => {
+    if (req.isAuthenticated()) return next();
+    res.status(401).json({ message: "Não autenticado" });
+};
 
-app.post('/login', passport.authenticate('local', {
-    successRedirect: '/dashboard',
-    failureRedirect: '/login'
-}));
+// 🔹 Rota para iniciar login com Google
+app.get("/auth/google",
+    passport.authenticate("google", { scope: ["profile", "email"] })
+);
 
-app.get('/dashboard', (req: Request, res: Response) => {
-    if (!req.isAuthenticated()) {
-        res.status(401).json('Você não está autenticado');
-        return 
+// 🔹 Rota de callback do Google
+app.get("/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/" }),
+    (req, res) => {
+        res.json({ message: "Login com Google bem-sucedido", user: req.user });
     }
-    res.status(200).json('Bem-vindo ao dashboard!');
+);
+
+// 🔹 Rota protegida
+app.get("/profile", ensureAuthenticated, (req, res) => {
+    res.json({ message: "Perfil do usuário", user: req.user });
 });
 
-app.get('/logout', (req, res, next) => {
-    req.logout((err) => {
-        if (err) {
-            return next(err);
-        }
-        res.status(200).send('Deslogado com sucesso!');
+// 🔹 Logout
+app.post("/logout", (req, res, next) => {
+    req.logout((err: any) => {
+        if (err) return next(err);
+        res.json({ message: "Logout realizado" });
     });
 });
 
