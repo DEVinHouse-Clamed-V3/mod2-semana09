@@ -18,6 +18,17 @@ authRouter.post("/", async (req: Request, res: Response) => {
         const userEntity = await userRepository.findOne({
             where: {
                 email: userLogin.email
+            },
+            relations: ["roles", "roles.permissions"],
+            select: {
+                roles: {
+                    id: true,
+                    description: true,
+                    permissions: {
+                        id: true,
+                        description: true
+                    }
+                }
             }
         })
 
@@ -38,7 +49,8 @@ authRouter.post("/", async (req: Request, res: Response) => {
         const payload = {
             email: userEntity.email,
             firstName: userEntity.firstName,
-            userId: userEntity.id
+            userId: userEntity.id,
+            roles: userEntity.roles
         } as PayloadJwt
         
         const token = await jwt.sign(payload, chaveSecretaJwt, {expiresIn: '1h'})
