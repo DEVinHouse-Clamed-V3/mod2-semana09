@@ -3,11 +3,13 @@ import { User } from "../entity/User"
 import {Request, Response, Router} from "express"
 import bcrypt from "bcrypt"
 
+import authenticate from "../middlewares/authenticate"
+
 const userRepository = AppDataSource.getRepository(User)
 
 const userRouter = Router()
 
-userRouter.get("/", async (req: Request, res: Response) => {
+userRouter.get("/", authenticate(["listar_usuario"]), async (req: Request, res: Response) => {
     try {
         const listUser = await userRepository.find()
 
@@ -17,7 +19,7 @@ userRouter.get("/", async (req: Request, res: Response) => {
     }
 })
 
-userRouter.post("/", async (req: Request, res: Response) => {
+userRouter.post("/", authenticate(["criar_usuario"]), async (req: Request, res: Response) => {
     try {
 
         let senha = req.body.password
@@ -44,7 +46,7 @@ userRouter.post("/", async (req: Request, res: Response) => {
     }
 })
 
-userRouter.put("/:id", async (req: Request, res: Response) => {
+userRouter.put("/:id", authenticate(["atualizar_usuario"]), async (req: Request, res: Response) => {
     try {
         let user = await userRepository.findOne({
             where: {
@@ -70,7 +72,7 @@ userRouter.put("/:id", async (req: Request, res: Response) => {
     }
 })
 
-userRouter.delete("/:id", async (req: Request, res: Response) => {
+userRouter.delete("/:id", authenticate(["remover_usuario"]), async (req: Request, res: Response) => {
     try {
         let id = Number(req.params.id)
 

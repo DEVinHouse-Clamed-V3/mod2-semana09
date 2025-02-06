@@ -50,7 +50,7 @@ authRouter.post("/", async (req: Request, res: Response) => {
             email: userEntity.email,
             firstName: userEntity.firstName,
             userId: userEntity.id,
-            roles: userEntity.roles
+            roles: JSON.stringify(userEntity.roles),
         } as PayloadJwt
         
         const token = await jwt.sign(payload, chaveSecretaJwt, {expiresIn: '1h'})
