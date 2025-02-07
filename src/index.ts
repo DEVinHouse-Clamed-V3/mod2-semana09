@@ -23,21 +23,37 @@ app.use(session({secret: process.env.SECRET_SESSION as string, resave: false, sa
 app.use(passport.initialize())
 app.use(passport.session())
 
-app.post("/login", passport.authenticate('local', {
-    successMessage: "Login realizado com sucesso!",
-    failureMessage: "Erro ao realizar login"
-}), (req: Request, res: Response) => {
-    res.status(200).send("Login realizado com sucesso!")
-})
+// Middleware para verificar autenticação
+const ensureAuthenticated = (req: any, res: any, next: any) => {
+    if (req.isAuthenticated()) return next();
+    res.status(401).json({ message: "Não autenticado" });
+};
 
-app.get("/logout", (req: Request, res: Response) => {
-    req.logout(() => {
-        res.status(200).send("Deslogado com sucesso!")
-    })
-})
+// 🔹 Rota para iniciar login com Google
+app.get("/auth/google",
+    passport.authenticate("google", { scope: ["profile", "email"] })
+);
 
-app.use("/users", authenticate, userRouter)
-// app.use("/rbac", authenticate, rbacRouter)
+// 🔹 Rota de callback do Google
+app.get("/auth/google/callback",
+    passport.authenticate("google", { failureRedirect: "/" }),
+    (req, res) => {
+        res.json({ message: "Login com Google bem-sucedido", user: req.user });
+    }
+);
+
+// 🔹 Rota protegida
+app.get("/profile", ensureAuthenticated, (req, res) => {
+    res.json({ message: "Perfil do usuário", user: req.user });
+});
+
+// 🔹 Logout
+app.post("/logout", (req, res, next) => {
+    req.logout((err: any) => {
+        if (err) return next(err);
+        res.json({ message: "Logout realizado" });
+    });
+});
 
 AppDataSource.initialize().then(() => {
     app.listen(3000, () => {
